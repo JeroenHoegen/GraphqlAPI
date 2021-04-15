@@ -17,6 +17,7 @@ class ProductType extends GraphQLType
         "status"  => 'Status',
         "description"  => 'desc',
         'on_sale' => false,
+        'img_url' => '',
     ];
 
 
@@ -52,12 +53,16 @@ class ProductType extends GraphQLType
                 'description' => 'The international standard book number for the book',
             ],
             'description' => [
-                'type' => Type::nonNull(Type::string()),
+                'type' => Type::string(),
                 'description' => 'The international standard book number for the book',
             ],
             'on_sale' => [
                 'type' => Type::nonNull(Type::boolean()),
                 'description' => 'The international standard book number for the book',
+            ],
+            'img_url' => [
+                'type' => Type::nonNull(Type::string()),
+                'description' => 'Id of a particular book',
             ],
         ];
     }
