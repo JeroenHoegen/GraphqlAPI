@@ -17,6 +17,10 @@ class PaymentType extends GraphQLType
     public function fields(): array
     {
         return [
+            'name' => [
+                'type' => Type::nonNull(Type::string()),
+                'description' => 'Name of the payment',
+            ],
             'id' => [
                 'type' => Type::nonNull(Type::string()),
                 'description' => 'Id of a particular book',

@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-use App\GraphQL\Queries\MagentoTestQuery;
+use App\GraphQL\Queries\OrdersQuery;
 use App\GraphQL\Queries\PaymentsQuery;
 use App\GraphQL\Queries\ProductQuery;
 use App\GraphQL\Queries\ProductsQuery;
-use App\GraphQL\Types\CouponType;
+use App\GraphQL\Types\OrderType;
 use App\GraphQL\Types\PaymentType;
 use App\GraphQL\Types\ProductType;
 use example\Mutation\ExampleMutation;
@@ -111,13 +111,9 @@ return [
                 // 'example_query' => ExampleQuery::class,
                 'products' => App\GraphQL\Queries\ProductsQuery::class,
                 'product' => App\GraphQL\Queries\ProductQuery::class,
-                //'shippingzones' => App\GraphQL\Queries\ShippingZonesQuery::class,
-                'payment' => PaymentsQuery::class,
-                'MagentoTest' => MagentoTestQuery::class,
-                //'database' => App\GraphQL\Queries\DatabaseQuery::class,
             ],
             'mutation' => [
-                // 'example_mutation'  => ExampleMutation::class,
+                'order' => \App\GraphQL\Mutations\OrderQuery::class,
             ],
             'middleware' => [],
             'method' => ['get', 'post'],
@@ -137,8 +133,8 @@ return [
         // 'example'           => ExampleType::class,
         // 'relation_example'  => ExampleRelationType::class,
         // \Rebing\GraphQL\Support\UploadType::class,
-        'product' => App\GraphQL\Types\ProductType::class,
-        'coupon' => App\GraphQL\Types\CouponType::class,
+        'webshop' => App\GraphQL\Types\ProductType::class,
+        'coupon' => App\GraphQL\Types\OrderType::class,
         'payment' => PaymentType::class,
         //'shippingzone' => App\GraphQL\Types\ShippingZoneType::class,
         //'webshop' => App\GraphQL\Types\WebshopType::class,

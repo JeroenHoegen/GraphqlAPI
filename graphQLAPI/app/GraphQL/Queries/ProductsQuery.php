@@ -12,15 +12,13 @@ use Rebing\GraphQL\Support\Query;
 
 class ProductsQuery extends Query
 {
-
-
     protected $attributes = [
         'name' => 'products',
     ];
 
     public function type(): Type
     {
-        return Type::listOf(GraphQL::type('product'));
+        return Type::listOf(GraphQL::type('webshop'));
     }
 
     public function args(): array
@@ -54,6 +52,7 @@ class ProductsQuery extends Query
     public function Magento($webshop): array
     {
         $magento = new Magento();
+        $magento->token = $webshop[0]['customer_key'];
         $magento->baseUrl = $webshop[0]['url'];
         $products = $magento->api('products')->all();
         $response = [];
@@ -62,12 +61,12 @@ class ProductsQuery extends Query
             $response[] = [
                 "name" => $product["name"],
                 "id" => $product["id"],
-                "sale_price" => $product["sku"],
+                "sku" => $product["sku"],
                 "regular_price" =>  $product["price"] ?? 0,
-                "description" => $product["price"] ?? 0,
+                "description" => $product["description"] ?? "",
                 "date_created" => $product["created_at"],
                 "type" => $product["type_id"],
-                "img_url" => $product["media_gallery_entries"][0]["file"]
+                "img_url" => "https://magento.keyapplications.nl/pub/media/catalog/product/cache/35a302407f12a011cb427075a0275fff".$product["media_gallery_entries"][0]["file"]
             ];
         }
         return $response;
@@ -87,11 +86,14 @@ class ProductsQuery extends Query
             ]
         );
         $products = $woocommerce->get('products');
+
         $response = [];
         foreach ($products as $product) {
+
             $response[] = [
                 "name" => $product->name,
                 "id" => $product->id,
+                "sku" => $product->id,
                 "sale_price" => $product->sale_price,
                 "regular_price" => $product->regular_price,
                 "permalink" => $product->permalink,

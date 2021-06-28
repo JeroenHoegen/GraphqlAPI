@@ -18,7 +18,7 @@ class ProductQuery extends Query
 
     public function type(): Type
     {
-        return Type::listOf(GraphQL::type('product'));
+        return Type::listOf(GraphQL::type('webshop'));
     }
 
     public function args(): array
@@ -27,7 +27,10 @@ class ProductQuery extends Query
             'id' => [
                 'name' => 'id',
                 'type' => Type::int(),
-                'rules' => ['required']
+            ],
+            'sku' => [
+                'name' => 'sku',
+                'type' => Type::String(),
             ],
             'webshopID' => [
                 'name' => 'webshopID',
@@ -41,6 +44,7 @@ class ProductQuery extends Query
     public function resolve($root, $args)
     {
         $id = $args['id'];
+        $sku = $args['sku'];
         $webshop = Webshop::query()->where("id", $args["webshopID"])->get();
         $response = [];
         switch ( $webshop[0]['type']){
@@ -48,31 +52,31 @@ class ProductQuery extends Query
                 $response = $this->WooCommerce($webshop, $id);
                 break;
             case "Magento";
-                $response = $this->Magento($webshop);
+                $response = $this->Magento($webshop, $sku);
                 break;
         }
         return $response;
     }
 
-    public function Magento($webshop): array
+    public function Magento($webshop, $sku): array
     {
-        $magento = new Magento();
-        $magento->baseUrl = $webshop[0]['url'];
-        $products = $magento->api('products')->all();
-        $response = [];
 
-        foreach ($products["items"] as $product) {
+        $magento = new Magento();
+        $magento->token = $webshop[0]['customer_key'];
+        $magento->baseUrl = $webshop[0]['url'];
+        $product = $magento->api('products')->show($sku);
             $response[] = [
                 "name" => $product["name"],
                 "id" => $product["id"],
-                "sale_price" => $product["sku"],
+                "sku" => $product["sku"],
+                "sale_price" => '',
                 "regular_price" =>  $product["price"] ?? 0,
-                "description" => $product["price"] ?? 0,
+                "description" => $product["description"] ?? "",
                 "date_created" => $product["created_at"],
                 "type" => $product["type_id"],
-                "img_url" => $product["media_gallery_entries"][0]["file"]
+                "img_url" => "https://magento.keyapplications.nl/pub/media/catalog/product/cache/35a302407f12a011cb427075a0275fff".$product["media_gallery_entries"][0]["file"]
             ];
-        }
+
         return $response;
     }
 
@@ -93,6 +97,7 @@ class ProductQuery extends Query
         $response[] = [
             "name" => $product->name,
             "id" => $product->id,
+            "sku" => $product->id,
             "sale_price" => $product->sale_price,
             "regular_price" => $product->regular_price,
             "permalink" => $product->permalink,

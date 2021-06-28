@@ -13,6 +13,24 @@ use Illuminate\Support\Facades\Route;
 |
 */
 
+Auth::routes();
+
 Route::get('/', function () {
-    return view('welcome');
+    if(Auth::guest()) {
+        return redirect('/login');
+    }
+    return view('home');
 });
+
+Route::middleware(['auth'])->group(function() {
+    Route::get('/home', function() {
+        return view('home');
+    });
+    Route::get('/update/webshop/{id}', [\App\Http\Controllers\WebshopController::class, 'update'])->name('webshop.edit');
+    Route::get('/delete/webshop/{id}', [\App\Http\Controllers\WebshopController::class, 'destroy'])->name('webshop.delete');
+    Route::get('/create/product', [\App\Http\Controllers\WebshopController::class, 'add'])->name('webshop.add');
+});
+
+//Handlers
+Route::post('/handle/update', [\App\Http\Controllers\WebshopController::class, 'edit'])->name('webshop.update');
+Route::post('/handle/create', [\App\Http\Controllers\WebshopController::class, 'create'])->name('webshop.create');

@@ -9,6 +9,7 @@ class ProductType extends GraphQLType
     protected $attributes = [
         'name' => 'Product',
         'id' => '',
+        'sku'=> '',
         "regular_price"  => 'Price',
         "sale_price"  => 'Sale price',
         "permalink"  => 'Link',
@@ -26,43 +27,47 @@ class ProductType extends GraphQLType
         return [
             'id' => [
                 'type' => Type::nonNull(Type::string()),
-                'description' => 'Id of a particular book',
+                'description' => 'Id of a particular webshop',
             ],
             'name' => [
                 'type' => Type::nonNull(Type::string()),
-                'description' => 'The title of the book',
+                'description' => 'The name of the webshop',
             ],
             'regular_price' => [
                 'type' => Type::nonNull(Type::string()),
-                'description' => 'Name of the author of the book',
+                'description' => 'the normal price of a webshop',
             ],
             'sale_price' => [
                 'type' => Type::nonNull(Type::string()),
-                'description' => 'The language which the book was written in',
+                'description' => 'The sale price of a webshop',
             ],
             'permalink' => [
                 'type' => Type::nonNull(Type::string()),
-                'description' => 'The year the book was published',
+                'description' => 'The link to the webshop',
             ],
             'type' => [
                 'type' => Type::nonNull(Type::string()),
-                'description' => 'The international standard book number for the book',
+                'description' => 'The type of a webshop',
             ],
             'status' => [
                 'type' => Type::nonNull(Type::string()),
-                'description' => 'The international standard book number for the book',
+                'description' => 'The status of a webshop',
             ],
             'description' => [
                 'type' => Type::string(),
-                'description' => 'The international standard book number for the book',
+                'description' => 'The description of a webshop',
+            ],
+            'sku' => [
+                'type' => Type::string(),
+                'description' => 'The sku of a webshop',
             ],
             'on_sale' => [
                 'type' => Type::nonNull(Type::boolean()),
-                'description' => 'The international standard book number for the book',
+                'description' => 'A boolean that checks if the webshop is on sale',
             ],
             'img_url' => [
                 'type' => Type::nonNull(Type::string()),
-                'description' => 'Id of a particular book',
+                'description' => 'url to the image of a webshop',
             ],
         ];
     }
