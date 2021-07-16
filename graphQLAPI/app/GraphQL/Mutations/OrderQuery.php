@@ -7,14 +7,11 @@ use App\Models\Webshop;
 use Automattic\WooCommerce\Client;
 use GraphQL\Type\Definition\Type;
 use Grayloon\Magento\Magento;
-use phpDocumentor\Reflection\Types\Boolean;
-use PhpParser\Node\Expr\Cast\Int_;
 use Rebing\GraphQL\Support\Facades\GraphQL;
-use Rebing\GraphQL\Support\Query;
-use function Sodium\add;
+use Rebing\GraphQL\Support\Mutation;
 
 
-class OrderQuery extends Query
+class OrderQuery extends Mutation
 {
     protected $attributes = [
         'name' => 'Order',
@@ -84,7 +81,8 @@ class OrderQuery extends Query
             ],
             'products' => [
                 'name' => 'products',
-                'type' => Type::listOf(Type::listOf(Type::int())),
+                'type' => Type::listOf(Type::listOf(Type::string())),
+                'rules' => ['required']
             ],
 
         ];
@@ -93,6 +91,7 @@ class OrderQuery extends Query
 
     public function resolve($root, $args): object
     {
+
         $webshop = Webshop::query()->where("id", $args["webshopID"])->get();
         $return = [];
         switch ( $webshop[0]['type']){
@@ -111,21 +110,18 @@ class OrderQuery extends Query
         $magento = new Magento();
         $magento->token = $webshop[0]['customer_key'];
         $magento->baseUrl = $webshop[0]['url'];
+
+        //Making a guestCart
         $cardID = $magento->api('guestCarts')->create();
         $cardID = str_replace("\"", "", $cardID->body());
+
+        //Adding products to cart
         foreach ($args["products"] as $product){
-            $magento->api('guestCarts')->addItem($cardID,  $product["sku"], 1);
+            $magento->api('guestCarts')->addItem($cardID,  $product[0], $product[1]);
         }
 
-        $info = $magento->api('guestCarts')->items($cardID);
-        print($info);
-
+        //Setting the orderInfo
         $orderInfo = [];
-//        $billingInfo["region"] = "New York";
-//        $billingInfo["region_id"] = 43;
-//        $billingInfo["region_code"] = "NY";
-
-
         $billingInfo["country_id"] = "NL";
         $billingInfo["street"] = [$args["address"]];
         $billingInfo["postcode"] = $args["postcode"];
@@ -134,37 +130,29 @@ class OrderQuery extends Query
         $billingInfo["lastname"] = $args["last_name"];
         $billingInfo["email"] = $args["email"];
         $billingInfo["telephone"] = $args["phone"];
-        //$billingInfo["same_as_billing"] = 1;
         $addressInformation = [];
         $addressInformation["shipping_address"] = $billingInfo;
         $addressInformation["billing_address"] = $billingInfo;
         $addressInformation["shipping_carrier_code"] = "flatrate";
         $addressInformation["shipping_method_code"] = "flatrate";
         $orderInfo["addressInformation"] = $addressInformation;
-        $test = [];
-        $test["billing_address"] = $billingInfo;
+        $magento->api('guestCarts')->shippingInformation($cardID, $orderInfo);
+
+        //Setting the payment info
         $payment = [];
-        $payment["method"] = "checkmo";
+        $payment["billing_address"] = $billingInfo;
+        $paymentInfo = [];
+        $paymentInfo["method"] = "checkmo";
+        $payment["paymentMethod"] = $paymentInfo;
+        $payment['email'] = $args["email"];
+        $orderID =$magento->api('guestCarts')->paymentInformation($cardID, $payment);
 
-
-
-
-        $paymentID = $magento->api('guestCarts')->shippingInformation($cardID, $orderInfo);
-
-        print($paymentID);
-        $test["paymentMethod"] = $payment;
-        $test['email'] = $args["email"];
-        $magento->api('guestCarts')->paymentInformation($cardID, $test);
-
-        $orderID = $magento->api('guestCarts')->estimateShippingMethods($cardID, $test);
-
-
-        print $orderID;
         return (object) $orderID;
     }
 
     public function WooCommerce($webshop, $args): object
     {
+        //Setting the billing and shipping address
         $order = [];
         $billing = [];
         $billing["first_name"] = $args["first_name"];
@@ -185,6 +173,8 @@ class OrderQuery extends Query
         $order["shipping"] = $shipping;
         $productlist = [];
         $counter = 0;
+
+        //Adding all the products to the body
         foreach ($args["products"] as $product){
             $tempproduct =[];
             $tempproduct["product_id"] = $product[0];
@@ -197,7 +187,6 @@ class OrderQuery extends Query
         $shipping_lines["method_id"] = "flat_rate";
         $shipping_lines["method_title"] = "flat_rate";
         $shipping_lines["total"] = "10.00";
-        //$order["shipping_lines"] = $shipping_lines;
 
         $woocommerce = new Client(
             $webshop[0]['url'],
@@ -206,7 +195,6 @@ class OrderQuery extends Query
             [
                 'wp_api' => true,
                 'version' => 'wc/v2',
-                'verify_ssl' => false,
             ]
         );
         $returnValue = $woocommerce->post("orders",$order);

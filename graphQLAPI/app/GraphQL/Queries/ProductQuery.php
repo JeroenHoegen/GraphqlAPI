@@ -43,6 +43,7 @@ class ProductQuery extends Query
 
     public function resolve($root, $args)
     {
+
         $id = $args['id'];
         $sku = $args['sku'];
         $webshop = Webshop::query()->where("id", $args["webshopID"])->get();
@@ -74,7 +75,7 @@ class ProductQuery extends Query
                 "description" => $product["description"] ?? "",
                 "date_created" => $product["created_at"],
                 "type" => $product["type_id"],
-                "img_url" => "https://magento.keyapplications.nl/pub/media/catalog/product/cache/35a302407f12a011cb427075a0275fff".$product["media_gallery_entries"][0]["file"]
+                "img_url" => "https://magento.keyapplications.nl/pub/media/catalog/product/".$product["media_gallery_entries"][0]["file"]
             ];
 
         return $response;
@@ -89,7 +90,6 @@ class ProductQuery extends Query
             [
                 'wp_api' => true,
                 'version' => 'wc/v2',
-                'verify_ssl' => false,
             ]
         );
         $product = $woocommerce->get("products/$id");

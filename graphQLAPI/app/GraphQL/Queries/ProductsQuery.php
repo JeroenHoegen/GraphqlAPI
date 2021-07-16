@@ -54,7 +54,7 @@ class ProductsQuery extends Query
         $magento = new Magento();
         $magento->token = $webshop[0]['customer_key'];
         $magento->baseUrl = $webshop[0]['url'];
-        $products = $magento->api('products')->all();
+        $products = $magento->api('products')->all($pageSize = 20, $currentPage = 1, $filters = []);
         $response = [];
 
         foreach ($products["items"] as $product) {
@@ -63,10 +63,11 @@ class ProductsQuery extends Query
                 "id" => $product["id"],
                 "sku" => $product["sku"],
                 "regular_price" =>  $product["price"] ?? 0,
+                "sale_price" =>  '',
                 "description" => $product["description"] ?? "",
                 "date_created" => $product["created_at"],
                 "type" => $product["type_id"],
-                "img_url" => "https://magento.keyapplications.nl/pub/media/catalog/product/cache/35a302407f12a011cb427075a0275fff".$product["media_gallery_entries"][0]["file"]
+                "img_url" => "https://magento.keyapplications.nl/pub/media/catalog/product/".$product["media_gallery_entries"][0]["file"]
             ];
         }
         return $response;
@@ -82,7 +83,6 @@ class ProductsQuery extends Query
             [
                 'wp_api' => true,
                 'version' => 'wc/v2',
-                'verify_ssl' => false,
             ]
         );
         $products = $woocommerce->get('products');
